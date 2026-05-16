@@ -5,10 +5,11 @@ import googleLogo from '../../assets/googleLogo.png';
 import { loginSchema } from '../../schemas/login.schema';
 import type { LoginFormData } from '../../schemas/login.schema';
 import { useState, type FormEvent } from 'react';
-import {  GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
-import {auth, googleProvider} from '../../firebase/config';
+import { GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase/config';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
+import { setPersistence, browserLocalPersistence, browserSessionPersistence,  } from 'firebase/auth';
 
 const Login = () => {
     const [formData, setFormData] = useState<LoginFormData>({
@@ -16,51 +17,71 @@ const Login = () => {
         password: ''
     });
 
-    const navigate = useNavigate()
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         const result = loginSchema.safeParse(formData);
-
+        setLoading(true);
         if (!result.success) {
             console.error(result.error.flatten(issue => issue.message).fieldErrors);
+            setLoading(false)
             return;
-        } else{
-           const userLogin = async()=>{
-            try{
-                const response = await signInWithEmailAndPassword(
-                    auth,
-                    formData.email,
-                    formData.password
-                )
-                if(response){
-                    navigate('/chat')
+        } else {
+            const userLogin = async () => {
+                try {
+                    await setPersistence(
+                        auth,
+                        rememberMe
+                            ? browserLocalPersistence
+                            : browserSessionPersistence
+                    )
+
+                    const response = await signInWithEmailAndPassword(
+                        auth,
+                        formData.email,
+                        formData.password
+                    )
+                    if (response) {
+                        navigate('/chat')
+                    }
+                } catch (error) {
+                    console.log((error as Error).message);
+                } finally {
+                    setLoading(false)
                 }
-            } catch(error){
-                console.log((error as Error).message);   
             }
-           }
-           userLogin()
+            userLogin()
         }
-        
+
     };
 
-    const handleGoogleLogin = async()=>{
-        try{
+    const handleGoogleLogin = async () => {
+        try {
             const result = await signInWithPopup(auth, googleProvider);
             const user = await result.user
             const credentials = GoogleAuthProvider.credentialFromResult(result)
             const accessToken = credentials?.accessToken
-            if(user.emailVerified){
+            if (user.emailVerified) {
+                setLoading(true)
                 window.alert('Login Successful')
-            const userInfo = [user.displayName, user.email, user.phoneNumber, user.photoURL]
+                const userInfo = [user.displayName, user.email, user.phoneNumber, user.photoURL]
                 console.log(userInfo);
                 navigate('/chat')
             }
-        } catch(error){
+        } catch (error) {
             throw new Error((error as Error).message)
+        } finally {
+            setLoading(false)
         }
-    }
+    };
+
+const handleForgotPassword = ()=>{
+
+}
+
 
     return (
         <div className={styles.container}>
@@ -74,7 +95,8 @@ const Login = () => {
                     <p className={styles.subtitle}>See what is going on with your business</p>
 
                     <button className={styles.googleBtn}
-                    onClick={handleGoogleLogin}
+                        disabled={loading}
+                        onClick={handleGoogleLogin}
                     >
                         <img src={googleLogo} alt="Google logo" className={styles.googleIcon} />
                         Continue with Google
@@ -114,13 +136,18 @@ const Login = () => {
 
                         <div className={styles.row}>
                             <label className={styles.rememberMe}>
-                                <input type="checkbox" className={styles.checkbox} />
+                                <input type="checkbox"
+                                    className={styles.checkbox}
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                />
                                 Remember Me
                             </label>
                             <a href="#" className={styles.forgotPassword}>Forgot Password?</a>
                         </div>
 
                         <button className={styles.loginBtn}
+                            disabled={loading}
                         >Login</button>
                     </form>
                     <p className={styles.registerRow}>
