@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { it, expect, vi } from 'vitest'
 import { useAuth } from '../useAuth'
 import { mockOnAuthStateChanged } from '../../mocks/firebaseAuth.mock';
 
