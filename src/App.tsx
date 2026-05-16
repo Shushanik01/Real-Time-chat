@@ -1,9 +1,11 @@
-import Login from "./pages/loginPage/loginpage"
+import Login from "./pages/loginPage/loginpage";
+import ForgotPassword from "./pages/forgotPasswordPage/forgotPassword";
 
 const App = ()=>{
   return(
     <>
-    <Login/>
+    {/* <Login/> */}
+    <ForgotPassword/>
     </>
   )
 }
