@@ -1,7 +1,9 @@
 import styles from './style.module.css';
 import image from '../../assets/image.png';
 import logo from '../../assets/logo.png';
-import googleLogo from '../../assets/googleLogo.png'
+import googleLogo from '../../assets/googleLogo.png';
+import { loginSchema } from '../../schemas/login.schema';
+import type { LoginFormData } from '../../schemas/login.schema';
 
 const Login = () => {
     return (
