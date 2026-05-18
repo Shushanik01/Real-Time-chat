@@ -22,7 +22,24 @@ export const MessageItem = ({ message, isMine }: MessageItemProps) => {
   return (
     <div className={`message-item ${isMine ? 'mine' : 'other'}`}>
       {!isMine && (
-        <img src={message.userPhoto} alt={message.userName} className="avatar" />
+        message.userPhoto ? (
+          <img
+            src={message.userPhoto}
+            alt={message.userName}
+            className="avatar"
+            referrerPolicy="no-referrer"
+            onError={e => {
+              const img = e.target as HTMLImageElement;
+              img.style.display = 'none';
+              img.nextElementSibling?.classList.remove('hidden');
+            }}
+          />
+        ) : null
+      )}
+      {!isMine && (
+        <div className={`avatar avatar-fallback${message.userPhoto ? ' hidden' : ''}`}>
+          {(message.userName || '?')[0].toUpperCase()}
+        </div>
       )}
       
       <div className="message-content">

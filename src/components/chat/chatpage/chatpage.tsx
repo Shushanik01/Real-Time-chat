@@ -8,18 +8,31 @@ import { MessageList } from '@/components/chat/messageList'
 import { MessageInput } from '@/components/chat/messageInput'
 import { TypingIndicator } from '@/components/typingIndicator/typingIndicator'
 import { auth } from '@/firebase/config'
+import lightBg from '@/assets/light.jpeg'
+import darkBg from '@/assets/dark.jpeg'
 import './ChatPage.css'
 
 const ChatPage = () => {
   const { user, isLoading: authLoading } = useAuth()
   
-  const { rooms, loading: roomsLoading, activeRoomId, setActiveRoomId } = useRooms()
+  const { rooms, loading: roomsLoading, activeRoomId, setActiveRoomId, createRoom } = useRooms()
   
   const { messages, sendMessage, loading: messagesLoading } = useMessages(activeRoomId)
   
   const { typingUsers, startTyping, stopTyping } = useTyping(activeRoomId, user?.uid || '')
-  
+
+  const handleSendMessage = (text: string) => {
+    if (!user) return;
+    sendMessage({
+      text,
+      userId: user.uid,
+      userName: user.displayName || '',
+      userPhoto: user.photoURL || '',
+    });
+  };
+
   const [showSidebar, setShowSidebar] = useState(true)
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   if (authLoading || roomsLoading) {
     return (
@@ -43,7 +56,7 @@ const ChatPage = () => {
   }
 
   return (
-    <div className="chat-page">
+    <div className="chat-page" data-theme={theme}>
       <button 
         className="sidebar-toggle"
         onClick={() => setShowSidebar(!showSidebar)}
@@ -55,11 +68,21 @@ const ChatPage = () => {
         <div className="sidebar-header">
           <h2>Chat Rooms</h2>
           <div className="user-info">
-            <img 
-              src={user.photoURL || '/default-avatar.png'} 
-              alt={user.displayName || 'User'}
-              className="user-avatar"
-            />
+            {user.photoURL ? (
+              <img
+                src={user.photoURL}
+                alt={user.displayName || 'User'}
+                className="user-avatar"
+                referrerPolicy="no-referrer"
+                onError={e => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                  (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                }}
+              />
+            ) : null}
+            <div className={`user-avatar-fallback${user.photoURL ? ' hidden' : ''}`}>
+              {(user.displayName || 'U')[0].toUpperCase()}
+            </div>
             <span className="user-name">{user.displayName}</span>
           </div>
         </div>
@@ -69,8 +92,8 @@ const ChatPage = () => {
           activeRoomId={activeRoomId}
           onSelectRoom={(roomId) => {
             setActiveRoomId(roomId)
-            setShowSidebar(false) 
           }}
+          onCreateRoom={createRoom}
         />
         
         <div className="sidebar-footer">
@@ -93,9 +116,12 @@ const ChatPage = () => {
               {typingUsers.length > 0 && '💬'}
             </span>
           </div>
+          <button className="theme-toggle" onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')} title="Toggle theme">
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
         </div>
 
-        <div className="messages-container">
+        <div className="messages-container" style={{ backgroundImage: `url(${theme === 'dark' ? darkBg : lightBg})` }}>
           {messagesLoading && messages.length === 0 ? (
             <div className="messages-loading">
               <p>Loading messages...</p>
@@ -118,7 +144,7 @@ const ChatPage = () => {
 
         <div className="input-container">
           <MessageInput
-            onSendMessage={sendMessage}
+            onSendMessage={handleSendMessage}
             onStartTyping={startTyping}
             onStopTyping={stopTyping}
           />

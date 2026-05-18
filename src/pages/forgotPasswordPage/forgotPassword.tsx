@@ -6,22 +6,18 @@ import recovery from "../../assets/recovery.png";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const handleResetPassword = async () => {
-    setError("");
-    if (!email) {
-      setError("Please enter your email address.");
-      return;
-    }
+    if (!email) return;
     setLoading(true);
     try {
       await sendPasswordResetEmail(auth, email);
-      setSent(true);
-    } catch (error) {
-      setError((error as Error).message);
+    } catch {
+      // Silently ignore errors — with Email Enumeration Protection enabled,
+      // we must not reveal whether the email exists in our system.
     } finally {
+      setSent(true);
       setLoading(false);
     }
   };
@@ -57,8 +53,6 @@ const ForgotPassword = () => {
                 onKeyDown={(e) => e.key === "Enter" && handleResetPassword()}
               />
 
-              {error && <p className={styles.error}>{error}</p>}
-
               <button
                 className={styles.submitBtn}
                 onClick={handleResetPassword}
@@ -83,7 +77,7 @@ const ForgotPassword = () => {
 
               <button
                 className={styles.submitBtn}
-                onClick={() => { setSent(false); setEmail(""); setError(""); }}
+                onClick={() => { setSent(false); setEmail(""); }}
               >
                 Try a different email
               </button>

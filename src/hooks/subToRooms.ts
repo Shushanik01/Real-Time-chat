@@ -5,8 +5,8 @@ export const subToRooms = (callback: Function)=>{
     return onSnapshot(collection(db, 'rooms'), (snapshot)=>{
         const rooms = snapshot.docs.map(doc =>({
             id: doc.id,
-            ...doc.data
+            ...doc.data()
         }));
-        callback(snapshot)
+        callback(rooms)
     })
 }

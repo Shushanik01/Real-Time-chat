@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react"
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"
+import { db } from "../firebase/config"
 import { subToRooms } from "./subToRooms";
 
 export const useRooms = () => {
@@ -14,5 +16,14 @@ export const useRooms = () => {
         return unsub;
     }, []);
 
-    return { rooms, loading, activeRoomId, setActiveRoomId };
+    const createRoom = async (name: string) => {
+        const trimmed = name.trim();
+        if (!trimmed) return;
+        await addDoc(collection(db, "rooms"), {
+            name: trimmed,
+            createdAt: serverTimestamp(),
+        });
+    };
+
+    return { rooms, loading, activeRoomId, setActiveRoomId, createRoom };
 }

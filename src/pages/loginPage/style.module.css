@@ -170,6 +170,12 @@
     text-decoration: underline;
 }
 
+.error {
+    font-size: 13px;
+    color: #dc2626;
+    margin: -4px 0 0;
+}
+
 .loginBtn {
     width: 100%;
     padding: 13px;

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import styles from './style.module.css';
 import image from '../../assets/image.png';
 import logo from '../../assets/logo.png';
@@ -18,16 +19,19 @@ const Login = () => {
     });
 
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
     const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
+        setError('');
         const result = loginSchema.safeParse(formData);
         setLoading(true);
         if (!result.success) {
-            console.error(result.error.flatten(issue => issue.message).fieldErrors);
-            setLoading(false)
+            const fields = result.error.flatten(issue => issue.message).fieldErrors;
+            setError(Object.values(fields).flat()[0] ?? 'Invalid input.');
+            setLoading(false);
             return;
         } else {
             const userLogin = async () => {
@@ -38,7 +42,6 @@ const Login = () => {
                             ? browserLocalPersistence
                             : browserSessionPersistence
                     )
-
                     const response = await signInWithEmailAndPassword(
                         auth,
                         formData.email,
@@ -47,15 +50,14 @@ const Login = () => {
                     if (response) {
                         navigate('/chat')
                     }
-                } catch (error) {
-                    console.log((error as Error).message);
+                } catch (err) {
+                    setError((err as Error).message);
                 } finally {
                     setLoading(false)
                 }
             }
             userLogin()
         }
-
     };
 
     const handleGoogleLogin = async () => {
@@ -107,9 +109,7 @@ const handleForgotPassword = ()=>{
                         <span className={styles.dividerText}>or Sign in with Email</span>
                         <span className={styles.dividerLine} />
                     </div>
-                    <form action="submit"
-                        onSubmit={handleSubmit}
-                    >
+                    <form onSubmit={handleSubmit}>
                         <label className={styles.label}>Email</label>
                         <input
                             className={styles.input}
@@ -143,16 +143,18 @@ const handleForgotPassword = ()=>{
                                 />
                                 Remember Me
                             </label>
-                            <a href="#" className={styles.forgotPassword}>Forgot Password?</a>
+                            <Link to="/forgot-password" className={styles.forgotPassword}>Forgot Password?</Link>
                         </div>
+
+                        {error && <p className={styles.error}>{error}</p>}
 
                         <button className={styles.loginBtn}
                             disabled={loading}
-                        >Login</button>
+                        >{loading ? 'Logging in...' : 'Login'}</button>
                     </form>
                     <p className={styles.registerRow}>
                         Not Registered Yet?&nbsp;
-                        <a href="#" className={styles.createAccount}>Create an account</a>
+                        <Link to="/register" className={styles.createAccount}>Create an account</Link>
                     </p>
                 </div>
             </div>
