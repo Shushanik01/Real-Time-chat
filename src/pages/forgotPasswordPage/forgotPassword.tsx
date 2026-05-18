@@ -14,8 +14,6 @@ const ForgotPassword = () => {
     try {
       await sendPasswordResetEmail(auth, email);
     } catch {
-      // Silently ignore errors — with Email Enumeration Protection enabled,
-      // we must not reveal whether the email exists in our system.
     } finally {
       setSent(true);
       setLoading(false);
