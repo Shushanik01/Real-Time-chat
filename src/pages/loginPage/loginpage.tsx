@@ -6,7 +6,7 @@ import googleLogo from '../../assets/googleLogo.png';
 import { loginSchema } from '../../schemas/login.schema';
 import type { LoginFormData } from '../../schemas/login.schema';
 import { useState, type FormEvent } from 'react';
-import { GoogleAuthProvider, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/config';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup } from 'firebase/auth';
@@ -63,9 +63,7 @@ const Login = () => {
     const handleGoogleLogin = async () => {
         try {
             const result = await signInWithPopup(auth, googleProvider);
-            const user = await result.user
-            const credentials = GoogleAuthProvider.credentialFromResult(result)
-            const accessToken = credentials?.accessToken
+            const user = result.user
             if (user.emailVerified) {
                 setLoading(true)
                 window.alert('Login Successful')
@@ -79,10 +77,6 @@ const Login = () => {
             setLoading(false)
         }
     };
-
-const handleForgotPassword = ()=>{
-
-}
 
 
     return (

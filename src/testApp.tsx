@@ -10,7 +10,7 @@ function TestApp() {
             console.log(result.user.email);
             
         }catch(err){
-            throw new Error(err)
+            throw err
         }
     };
 

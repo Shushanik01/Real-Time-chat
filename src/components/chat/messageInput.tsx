@@ -12,7 +12,8 @@ export const MessageInput = ({ onSendMessage, onStartTyping, onStopTyping }: Mes
   const handleSend = () => {
     if (!message.trim()) return
     onSendMessage(message)
-    setMessage('')                        
+    setMessage('')
+    onStopTyping?.()
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -26,7 +27,8 @@ export const MessageInput = ({ onSendMessage, onStartTyping, onStopTyping }: Mes
       <input
         type="text"
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) => { setMessage(e.target.value); onStartTyping?.() }}
+        onBlur={() => onStopTyping?.()}
         onKeyPress={handleKeyPress}
         placeholder="Type a message..."
       />
